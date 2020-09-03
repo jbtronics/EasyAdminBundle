@@ -108,20 +108,18 @@ see the action link/button::
 
     public function configureActions(Actions $actions): Actions
     {
-        // this action is only visible and can only be executed by
-        // users with the ROLE_FINANCE permission
-        $viewInvoice = Action::new('View invoice', 'fa fa-file-invoice')
-            ->linkToCrudAction('renderInvoice')
-            ->setPermission('ROLE_FINANCE');
+        $viewInvoice = Action::new('invoice', 'View invoice', 'fa fa-file-invoice')
+            ->linkToCrudAction('renderInvoice');
 
         return $actions
             // ...
-            ->add(viewInvoice)
+            ->add(Crud::PAGE_DETAIL, $viewInvoice)
+            // use the 'setPermission()' method to set the permission of actions
+            // (the same permission is granted to the action on all pages)
+            ->setPermission('invoice', 'ROLE_FINANCE')
 
-            // use the 'update()' method to set the permission of built-in actions
-            ->update(Crud::PAGE_DETAIL, Action::NEW, function (Action $action) {
-                return $action->setPermission('ROLE_ADMIN');
-            })
+            // you can set permissions for built-in actions in the same way
+            ->setPermission(Action::NEW, 'ROLE_ADMIN')
         ;
     }
 
@@ -142,7 +140,7 @@ the ``setPermission()`` method::
             IntegerField::new('stock'),
             // users must have this permission/role to see this field
             IntegerField::new('sales')->setPermission('ROLE_ADMIN'),
-            FloatField::new('comission')->setPermission('ROLE_FINANCE'),
+            FloatField::new('commission')->setPermission('ROLE_FINANCE'),
             // ...
         ];
     }
@@ -179,7 +177,7 @@ doesn't have permission to see some items, an empty row will be displayed at the
 bottom of the list with a message explaining that they don't have enough
 permissions to see some items:
 
-.. image:: ../images/easyadmin-list-hidden-results.png
+.. image:: images/easyadmin-list-hidden-results.png
    :alt: Index page with some results hidden because user does not have enough permissions
 
 Custom Security Voters

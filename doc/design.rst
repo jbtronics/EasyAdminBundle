@@ -20,6 +20,8 @@ Depending on your needs, there are several ways of customizing the design. Some
 of them require pure CSS/JavaScript code and others require overriding and/or
 creating new Twig templates.
 
+.. _template-customization:
+
 Modifying Backend Templates
 ---------------------------
 
@@ -49,16 +51,19 @@ For example::
     └─ templates/
        └─ bundles/
           └─ EasyAdminBundle/
+             ├─ layout.html.twig
+             ├─ menu.html.twig
              ├─ crud/
+             │  ├─ index.html.twig
+             │  ├─ detail.html.twig
              │  └─ field/
              │     ├─ country.html.twig
              │     └─ text.html.twig
              ├─ label/
              │  └─ null.html.twig
              └─ page/
-                ├─ index.html.twig
-                ├─ form.html.twig
-                └─ paginator.html.twig
+                ├─ content.html.twig
+                └─ login.html.twig
 
 Instead of creating the new templates from scratch, you can extend from the
 original templates and change only the parts you want to override. However, you
@@ -66,13 +71,13 @@ must use a special syntax inside ``extends`` to avoid an infinite loop:
 
 .. code-block:: twig
 
-    {# templates/bundles/EasyAdminBundle/page/layout.html.twig #}
+    {# templates/bundles/EasyAdminBundle/layout.html.twig #}
 
     {# DON'T DO THIS: it will cause an infinite loop #}
-    {% extends '@EasyAdmin/page/layout.html.twig' %}
+    {% extends '@EasyAdmin/layout.html.twig' %}
 
     {# DO THIS: the '!' symbol tells Symfony to extend from the original template #}
-    {% extends '@!EasyAdmin/page/layout.html.twig' %}
+    {% extends '@!EasyAdmin/layout.html.twig' %}
 
     {% block sidebar %}
         {# ... #}
@@ -240,7 +245,7 @@ the :doc:`CRUD controllers </crud>` to add your own CSS and JavaScript files::
 
                 // use these generic methods to add any code before </head> or </body>
                 // the contents are included "as is" in the rendered page (without escaping them)
-                ->addHtmlContentToHead('<link rel="icon" type="image/png" href="/favicon-admin.png" />')
+                ->addHtmlContentToHead('<link rel="dns-prefetch" href="https://assets.example.com">')
                 ->addHtmlContentToBody('<script> ... </script>')
                 ->addHtmlContentToBody('<!-- generated at '.time().' -->')
             ;
@@ -250,7 +255,7 @@ the :doc:`CRUD controllers </crud>` to add your own CSS and JavaScript files::
 .. tip::
 
     :doc:`Fields </fields>` can also add CSS and JavaScript assets to the
-    rendered pages. :ref:`Read this section <fields-custom-field>` to learn how.
+    rendered pages. :ref:`Read this section <custom-fields>` to learn how.
 
 .. note::
 
@@ -266,7 +271,7 @@ easier to customize it to your own needs. You'll find all variables in the
 ``assets/css/easyadmin-theme/variables.scss`` file. To override any of them,
 create a CSS file and redefine the variable values:
 
-.. code-block:: css
+.. code-block:: text
 
     /* public/css/admin.css */
     :root {

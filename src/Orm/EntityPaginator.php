@@ -48,17 +48,17 @@ final class EntityPaginator implements EntityPaginatorInterface
         $paginator = new Paginator($query, $paginatorDto->fetchJoinCollection());
 
         if (null === $useOutputWalkers = $paginatorDto->useOutputWalkers()) {
-            $useOutputWalkers = \count($queryBuilder->getDQLPart('having') ?: []) > 0;
+            $havingPart = $queryBuilder->getDQLPart('having');
+            if (\is_array($havingPart)) {
+                $useOutputWalkers = \count($havingPart) > 0;
+            } else {
+                $useOutputWalkers = null !== $havingPart;
+            }
         }
         $paginator->setUseOutputWalkers($useOutputWalkers);
 
-        try {
-            $this->results = $paginator->getIterator();
-            $this->numResults = $paginator->count();
-        } catch (\Exception $e) {
-            $this->results = [];
-            $this->numResults = 0;
-        }
+        $this->results = $paginator->getIterator();
+        $this->numResults = $paginator->count();
 
         return $this;
     }

@@ -4,7 +4,7 @@ namespace EasyCorp\Bundle\EasyAdminBundle\Field;
 
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Type\EaFormPanelType;
-use EasyCorp\Bundle\EasyAdminBundle\Provider\UlidProvider;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
@@ -23,20 +23,20 @@ final class FormField implements FieldInterface
         throw new \RuntimeException('Instead of this method, use the "addPanel()" method.');
     }
 
-    public static function addPanel(?string $label = null, ?string $icon = null)
+    public static function addPanel(?string $label = null, ?string $icon = null): self
     {
         $field = new self();
 
         return $field
             ->setFieldFqcn(__CLASS__)
             ->hideOnIndex()
-            ->setProperty('ea_form_panel_'.(UlidProvider::new()))
+            ->setProperty('ea_form_panel_'.(new Ulid()))
             ->setLabel($label)
             ->setTemplateName('crud/field/form_panel')
             ->setFormType(EaFormPanelType::class)
             ->addCssClass('field-form_panel')
             ->setFormTypeOptions(['mapped' => false, 'required' => false])
-            ->setCustomOption(self::OPTION_ICON, null);
+            ->setCustomOption(self::OPTION_ICON, $icon);
     }
 
     public function setIcon(string $iconCssClass): self

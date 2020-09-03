@@ -33,8 +33,8 @@ Technically, dashboards are regular `Symfony controllers`_ so you can do
 anything you usually do in a controller, such as injecting services and using
 shortcuts like ``$this->render()`` or ``$this->isGranted()``.
 
-Dashboard classes must implement the
-``EasyCorp\Bundle\EasyAdminBundle\Contracts\Controller\DashboardInterface``,
+Dashboard controller classes must implement the
+``EasyCorp\Bundle\EasyAdminBundle\Contracts\Controller\DashboardControllerInterface``,
 which ensures that certain methods are defined in the dashboard. Instead of
 implementing the interface, you can also extend from the
 ``AbstractDashboardController`` class. Run the following command to quickly
@@ -67,7 +67,7 @@ dashboard with the ``make:admin:dashboard`` command, the route is defined using
          */
         public function index(): Response
         {
-            // ...
+            return parent::index();
         }
 
         // ...
@@ -87,7 +87,7 @@ an explicit name for the route to simplify your code::
      */
     public function index(): Response
     {
-        // ...
+        return parent::index();
     }
 
 If you don't use annotations, you must configure the dashboard route using YAML,
@@ -104,7 +104,7 @@ XML or PHP config in a separate file. For example, when using YAML:
 
 In practice you won't have to deal with this route or the query string
 parameters in your application because EasyAdmin provides a service to
-`generate CRUD URLs <crud-generate-urls>`_.
+:ref:`generate CRUD URLs <crud-generate-urls>`.
 
 .. note::
 
@@ -135,9 +135,16 @@ explained later)::
                 ->setTitle('ACME Corp.')
                 // you can include HTML contents too (e.g. to link to an image)
                 ->setTitle('<img src="..."> ACME <span class="text-small">Corp.</span>')
+
+                // the path defined in this method is passed to the Twig asset() function
+                ->setFaviconPath('favicon.svg')
+
                 // the domain used by default is 'messages'
                 ->setTranslationDomain('my-custom-domain')
-                // etc.
+
+                // there's no need to define the "text direction" explicitly because
+                // its default value is inferred dynamically from the user locale
+                ->setTextDirection('ltr')
             ;
         }
     }
@@ -170,7 +177,7 @@ the look and behavior of each menu item::
         public function configureMenuItems(): iterable
         {
             return [
-                MenuItem::linkToDashboard('Dashboard', 'fa-home'),
+                MenuItem::linkToDashboard('Dashboard', 'fa fa-home'),
 
                 MenuItem::section('Blog'),
                 MenuItem::linkToCrud('Categories', 'fa fa-tags', Category::class),
@@ -355,6 +362,16 @@ URL for the current security firewall automatically::
         ];
     }
 
+.. note::
+
+    The logout menu item will not work under certain authentication schemes like
+    HTTP Basic because they do not have a default logout path configured due to
+    the nature of how those authentication schemes work.
+
+    If you encounter an error like *"Unable to find the current firewall
+    LogoutListener, please provide the provider key manually."*, you'll need to
+    remove the logout menu item or add a logout provider to your authentication scheme.
+
 Exit Impersonation Menu Item
 ............................
 
@@ -410,7 +427,7 @@ generator to return the menu items::
         if ('... some complex expression ...') {
             yield MenuItem::section('Blog');
             yield MenuItem::linkToCrud('Categories', 'fa fa-tags', Category::class);
-            yield MenuItem::linkToCrud('Blog Posts', 'fa fa-file-text, BlogPost::class);
+            yield MenuItem::linkToCrud('Blog Posts', 'fa fa-file-text', BlogPost::class);
         }
 
         // ...

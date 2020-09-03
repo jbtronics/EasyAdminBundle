@@ -135,7 +135,7 @@ Title and Help Options
             ->setPageTitle('index', '%entity_label_plural% listing')
 
             // the help message displayed to end users (it can contain HTML tags)
-            ->setHelpMessage('edit', '...')
+            ->setHelp('edit', '...')
         ;
     }
 
@@ -230,13 +230,13 @@ Templates and Form Options
             // this sets the options of the entire form (later, you can set the options
             // of each form type via the methods of their associated fields)
             // pass a single array argument to apply the same options for the new and edit forms
-            ->formOptions([
+            ->setFormOptions([
                 'validation_groups' => ['Default', 'my_validation_group']
             ]);
 
             // pass two array arguments to apply different options for the new and edit forms
             // (pass an empty array argument if you want to apply no options to some form)
-            ->formOptions(
+            ->setFormOptions(
                 ['validation_groups' => ['my_validation_group']],
                 ['validation_groups' => ['Default'], '...' => '...'],
             );
@@ -403,36 +403,38 @@ of a given dashboard use the same route and they only differ in the query string
 parameters. Instead of having to deal with that, you can use the ``CrudUrlGenerator``
 service to generate URLs in your PHP code::
 
+    namespace App\Controller\Admin;
+
+    use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
     use EasyCorp\Bundle\EasyAdminBundle\Router\CrudUrlGenerator;
 
-    class SomeClass
+    class SomeCrudController extends AbstractCrudController
     {
-        private $crudUrlGenerator;
-
-        public function __construct(CrudUrlGenerator $crudUrlGenerator)
-        {
-            $this->crudUrlGenerator = $crudUrlGenerator;
-        }
+        // ...
 
         public function someMethod()
         {
             // new URLs are generated starting from the current URL, but you can add,
             // change or remove parameters from the current URL with the given methods
 
+            // if you prefer, you can inject the CrudUrlGenerator service in the
+            // constructor and/or action of this controller
+            $crudUrlGenerator = $this->get(CrudUrlGenerator::class);
+
             // the constructor argument is the new value of the given query parameters
             // the rest of existing query parameters are maintained, so you only
             // have to pass the values you want to change.
-            $url = $this->crudUrlGenerator->build(['page' => 2])->generateUrl();
+            $url = $crudUrlGenerator->build(['page' => 2])->generateUrl();
 
             // this other syntax is also possible
-            $url = $this->crudUrlGenerator->build()->set('page', 2)->generateUrl();
+            $url = $crudUrlGenerator->build()->set('page', 2)->generateUrl();
 
             // you can remove existing parameters
-            $url = $this->crudUrlGenerator->build()->unset('menuIndex')->generateUrl();
-            $url = $this->crudUrlGenerator->build()->unsetAll()->set('foo', 'someValue')->generateUrl();
+            $url = $crudUrlGenerator->build()->unset('menuIndex')->generateUrl();
+            $url = $crudUrlGenerator->build()->unsetAll()->set('foo', 'someValue')->generateUrl();
 
             // the URL builder provides shortcuts for the most common parameters
-            $url = $this->crudUrlGenerator->build()
+            $url = $crudUrlGenerator->build()
                 ->setController(SomeController::class)
                 ->setAction('theActionName')
                 ->generateUrl();
@@ -456,6 +458,67 @@ method (it will be called automatically for you):
     {% set url = ea_url()
         .setController('App\\Controller\\Admin\\SomeController')
         .setAction('theActionName') %}
+
+Generating CRUD URLs from outside EasyAdmin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When generating URLs to EasyAdmin pages from outside EasyAdmin (e.g. a regular
+Symfony controller) the :ref:`admin context variable <admin-context>` is not
+available. That's why you must always set the CRUD controller the URL is
+associated to. If you have more than one dashboard, you must also set the Dashboard::
+
+    use EasyCorp\Bundle\EasyAdminBundle\Router\CrudUrlGenerator;
+
+    use App\Controller\Admin\DashboardController;
+    use App\Controller\Admin\ProductCrudController;
+    use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+    class SomeSymfonyController extends AbstractController
+    {
+        private $crudUrlGenerator;
+
+        public function __construct(CrudUrlGenerator $crudUrlGenerator)
+        {
+            $this->crudUrlGenerator = $crudUrlGenerator;
+        }
+
+        public function someMethod()
+        {
+            // if your application only contains one Dashboard, it's enough
+            // to define the controller related to this URL
+            $url = $this->crudUrlGenerator
+                ->build()
+                ->setController(ProductCrudController::class)
+                ->setAction(Action::INDEX);
+
+            // in applications containing more than one Dashboard, you must also
+            // define the Dashboard associated to the URL
+            $url = $this->crudUrlGenerator
+                ->build()
+                ->setDashboard(DashboardController::class)
+                ->setController(ProductCrudController::class)
+                ->setAction(Action::INDEX);
+
+            // ...
+        }
+    }
+
+The same applies to URLs generated in Twig templates:
+
+.. code-block:: twig
+
+    {# if your application defines only one Dashboard #}
+    {% set url = ea_url()
+        .setController('App\\Controller\\Admin\\ProductCrudController')
+        .setAction('index') %}
+    {# if you prefer PHP constants, use this: .setAction(constant('EasyCorp\\Bundle\\EasyAdminBundle\\Config\\Action::INDEX')) #}
+
+    {# if your application defines multiple Dashboards #}
+    {% set url = ea_url()
+        .setDashboard('App\\Controller\\Admin\\DashboardController')
+        .setController('App\\Controller\\Admin\\ProductCrudController')
+        .setAction('index') %}
 
 .. _`Symfony controllers`: https://symfony.com/doc/current/controller.html
 .. _`How to Create a Custom Form Field Type`: https://symfony.com/doc/current/cookbook/form/create_custom_field_type.html

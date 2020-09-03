@@ -15,6 +15,7 @@ use EasyCorp\Bundle\EasyAdminBundle\EventListener\CrudResponseListener;
 use EasyCorp\Bundle\EasyAdminBundle\EventListener\ExceptionListener;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\ActionFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\AdminContextFactory;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\ControllerFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\EntityFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\FieldFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
@@ -99,8 +100,9 @@ return static function (ContainerConfigurator $container) {
             ->tag('console.command')
 
         ->set(MakeCrudControllerCommand::class)->public()
-            ->arg(0, new Reference(ClassMaker::class))
-            ->arg(1, new Reference('doctrine'))
+            ->arg(0, '%kernel.project_dir%')
+            ->arg(1, new Reference(ClassMaker::class))
+            ->arg(2, new Reference('doctrine'))
             ->tag('console.command')
 
         ->set(ClassMaker::class)
@@ -149,11 +151,14 @@ return static function (ContainerConfigurator $container) {
 
         ->set(AdminContextListener::class)
             ->arg(0, new Reference(AdminContextFactory::class))
-            ->arg(1, new Reference(DashboardControllerRegistry::class))
-            ->arg(2, new Reference(CrudControllerRegistry::class))
-            ->arg(3, new Reference('controller_resolver'))
-            ->arg(4, new Reference('twig'))
+            ->arg(1, new Reference(ControllerFactory::class))
+            ->arg(2, new Reference('twig'))
             ->tag('kernel.event_listener', ['event' => ControllerEvent::class])
+
+        ->set(ControllerFactory::class)
+            ->arg(0, new Reference(DashboardControllerRegistry::class))
+            ->arg(1, new Reference(CrudControllerRegistry::class))
+            ->arg(2, new Reference('controller_resolver'))
 
         ->set(CrudResponseListener::class)
             ->arg(0, new Reference(AdminContextProvider::class))
@@ -168,17 +173,11 @@ return static function (ContainerConfigurator $container) {
             ->arg(4, new Reference(CrudControllerRegistry::class))
             ->arg(5, new Reference(EntityFactory::class))
 
-        ->set(DashboardControllerRegistry::class)
-            ->arg(0, '%kernel.secret%')
-            ->arg(1, tagged_iterator(EasyAdminExtension::TAG_DASHBOARD_CONTROLLER))
-
-        ->set(CrudControllerRegistry::class)
-            ->arg(0, '%kernel.secret%')
-            ->arg(1, tagged_iterator(EasyAdminExtension::TAG_CRUD_CONTROLLER))
-
         ->set(CrudUrlGenerator::class)
             ->arg(0, new Reference(AdminContextProvider::class))
             ->arg(1, new Reference('router.default'))
+            ->arg(2, new Reference(DashboardControllerRegistry::class))
+            ->arg(3, new Reference(CrudControllerRegistry::class))
 
         ->set(MenuFactory::class)
             ->arg(0, new Reference(AdminContextProvider::class))

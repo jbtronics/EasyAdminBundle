@@ -12,6 +12,9 @@ final class TimeField implements FieldInterface
 {
     use FieldTrait;
 
+    public const OPTION_TIME_PATTERN = 'timePattern';
+    public const OPTION_WIDGET = 'widget';
+
     public static function new(string $propertyName, ?string $label = null): self
     {
         return (new self())
@@ -21,9 +24,9 @@ final class TimeField implements FieldInterface
             ->setFormType(TimeType::class)
             ->addCssClass('field-time')
             // the proper default values of these options are set on the Crud class
-            ->setCustomOption(DateTimeField::OPTION_TIME_FORMAT, null)
-            ->setCustomOption(DateTimeField::OPTION_DATETIME_PATTERN, null)
-            ->setCustomOption(DateTimeField::OPTION_TIMEZONE, null);
+            ->setCustomOption(self::OPTION_TIME_PATTERN, null)
+            ->setCustomOption(DateTimeField::OPTION_TIMEZONE, null)
+            ->setCustomOption(self::OPTION_WIDGET, DateTimeField::WIDGET_NATIVE);
     }
 
     /**
@@ -45,16 +48,57 @@ final class TimeField implements FieldInterface
      */
     public function setFormat(string $timeFormatOrPattern): self
     {
-        if ('none' === $timeFormatOrPattern || '' === trim($timeFormatOrPattern)) {
-            throw new \InvalidArgumentException(sprintf('The first argument of the "%s()" method cannot be "none" or an empty string. Define either the time format or the datetime Intl pattern.', __METHOD__));
+        if (DateTimeField::FORMAT_NONE === $timeFormatOrPattern || '' === trim($timeFormatOrPattern)) {
+            $validTimeFormatsWithoutNone = array_filter(DateTimeField::VALID_DATE_FORMATS, static function($format) {
+                return DateTimeField::FORMAT_NONE !== $format;
+            });
+
+            throw new \InvalidArgumentException(sprintf('The first argument of the "%s()" method cannot be "%s" or an empty string. Use either the special time formats (%s) or a datetime Intl pattern.',  __METHOD__, DateTimeField::FORMAT_NONE, implode(', ', $validTimeFormatsWithoutNone)));
         }
 
-        if (!\in_array($timeFormatOrPattern, DateTimeField::VALID_DATE_FORMATS, true)) {
-            $this->setCustomOption(DateTimeField::OPTION_DATETIME_PATTERN, $timeFormatOrPattern);
-            $this->setCustomOption(DateTimeField::OPTION_TIME_FORMAT, null);
+        $timePattern = DateTimeField::INTL_TIME_PATTERNS[$timeFormatOrPattern] ?? $timeFormatOrPattern;
+        $this->setCustomOption(self::OPTION_TIME_PATTERN, $timePattern);
+
+        return $this;
+    }
+
+    /**
+     * Uses native HTML5 widgets when rendering this field in forms
+     */
+    public function renderAsNativeWidget(bool $asNative = true): self
+    {
+        if (false === $asNative) {
+            $this->renderAsChoice();
         } else {
-            $this->setCustomOption(DateTimeField::OPTION_DATETIME_PATTERN, null);
-            $this->setCustomOption(DateTimeField::OPTION_TIME_FORMAT, $timeFormatOrPattern);
+            $this->setCustomOption(self::OPTION_WIDGET, DateTimeField::WIDGET_NATIVE);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Uses <select> lists when rendering this field in forms
+     */
+    public function renderAsChoice(bool $asChoice = true): self
+    {
+        if (false === $asChoice) {
+            $this->renderAsNativeWidget();
+        } else {
+            $this->setCustomOption(self::OPTION_WIDGET, DateTimeField::WIDGET_CHOICE);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Uses <input type="text"> elements when rendering this field in forms
+     */
+    public function renderAsText(bool $asText = true): self
+    {
+        if (false === $asText) {
+            $this->renderAsNativeWidget();
+        } else {
+            $this->setCustomOption(self::OPTION_WIDGET, DateTimeField::WIDGET_TEXT);
         }
 
         return $this;

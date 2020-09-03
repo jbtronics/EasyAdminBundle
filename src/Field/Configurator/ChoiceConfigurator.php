@@ -30,17 +30,26 @@ final class ChoiceConfigurator implements FieldConfiguratorInterface
 
     public function configure(FieldDto $field, EntityDto $entityDto, AdminContext $context): void
     {
+        $isExpanded = $field->getCustomOption(ChoiceField::OPTION_RENDER_EXPANDED);
         $choices = $field->getCustomOption(ChoiceField::OPTION_CHOICES);
         if (empty($choices)) {
-            throw new \InvalidArgumentException(sprintf('The "%s" select field must define its possible choices using the setChoices() method.', $field->getProperty()));
+            throw new \InvalidArgumentException(sprintf('The "%s" choice field must define its possible choices using the setChoices() method.', $field->getProperty()));
         }
 
         $field->setFormTypeOptionIfNotSet('choices', $choices);
         $field->setFormTypeOptionIfNotSet('multiple', $field->getCustomOption(ChoiceField::OPTION_ALLOW_MULTIPLE_CHOICES));
-        $field->setFormTypeOptionIfNotSet('expanded', $field->getCustomOption(ChoiceField::OPTION_RENDER_EXPANDED));
+        $field->setFormTypeOptionIfNotSet('expanded', $isExpanded);
 
-        if (true === $field->getCustomOption(ChoiceField::OPTION_AUTOCOMPLETE)) {
-            $field->setFormTypeOptionIfNotSet('attr.data-widget', 'select2');
+        if ($isExpanded && ChoiceField::WIDGET_AUTOCOMPLETE === $field->getCustomOption(ChoiceField::OPTION_WIDGET)) {
+            throw new \InvalidArgumentException(sprintf('The "%s" choice field wants to be displayed as an autocomplete widget and as an expanded list of choices at the same time, which is not possible. Use the renderExpanded() and renderAsNativeWidget() methods to change one of those options.', $field->getProperty()));
+        }
+
+        if (null === $field->getCustomOption(ChoiceField::OPTION_WIDGET)) {
+            $field->setCustomOption(ChoiceField::OPTION_WIDGET, $isExpanded ? ChoiceField::WIDGET_NATIVE : ChoiceField::WIDGET_AUTOCOMPLETE);
+        }
+
+        if (ChoiceField::WIDGET_AUTOCOMPLETE === $field->getCustomOption(ChoiceField::OPTION_WIDGET)) {
+            $field->setFormTypeOption('attr.data-widget', 'select2');
         }
 
         $fieldValue = $field->getValue();
@@ -77,7 +86,7 @@ final class ChoiceConfigurator implements FieldConfiguratorInterface
         } elseif (\is_array($badgeSelector)) {
             $badgeType = $badgeSelector[$value] ?? 'badge-secondary';
         } elseif (\is_callable($badgeSelector)) {
-            $badgeType = $badgeSelector($field);
+            $badgeType = $badgeSelector($value, $field);
             if (!\in_array($badgeType, ChoiceField::VALID_BADGE_TYPES, true)) {
                 throw new \RuntimeException(sprintf('The value returned by the callable passed to the "renderAsBadges()" method must be one of the following valid badge types: "%s" ("%s" given).', implode(', ', ChoiceField::VALID_BADGE_TYPES), $badgeType));
             }

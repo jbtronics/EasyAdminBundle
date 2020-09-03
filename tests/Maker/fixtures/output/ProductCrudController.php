@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Product;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
@@ -15,6 +16,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 
 class ProductCrudController extends AbstractCrudController
 {
@@ -29,10 +31,18 @@ class ProductCrudController extends AbstractCrudController
             ->setSearchFields(['id', 'tags', 'ean', 'image', 'features', 'price', 'name', 'description']);
     }
 
+    public function configureFilters(Filters $filters): Filters
+    {
+        return $filters
+            ->add(BooleanFilter::new('enabled', 'Foo Bar'))
+            ->add('name')
+            ->add('price');
+    }
+
     public function configureFields(string $pageName): iterable
     {
         $panel1 = FormField::addPanel('Basic information');
-        $name = TextField::new('name');
+        $name = TextField::new('name', 'áéíóúäëïöüñ[]%@# Name');
         $description = TextareaField::new('description');
         $categories = AssociationField::new('categories');
         $panel2 = FormField::addPanel('Product Details');

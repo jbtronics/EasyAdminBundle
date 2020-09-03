@@ -30,7 +30,7 @@ YAML configuration into the PHP files needed in EasyAdmin 3. In some complex
 projects this command won't be able to do all the needed work, but it will help
 you making most of the work.
 
-**Step 1.** In your existing Symfony 2 application, run this command:
+**Step 1.** In your existing Symfony application, run this command:
 
 .. code-block:: terminal
 
@@ -101,7 +101,7 @@ considered useful:
       {
           // ...
 
-          public function configureAssets(Assets $assets): Assets
+          public function configureAssets(): Assets
           {
               return Assets::new()
                   // ...
@@ -109,27 +109,13 @@ considered useful:
           }
       }
 
-* The ``design.assets.favicon`` option has been removed. Instead you can use this code::
-
-    class DashboardController extends AbstractDashboardController
-    {
-        // ...
-
-          public function configureAssets(Assets $assets): Assets
-          {
-              return Assets::new()
-                  // ...
-                  ->addHtmlContentToHead('<link rel="icon" type="image/png" href="/favicon-admin.png" />');
-          }
-    }
-
 * The ``default: true`` option to set the default backend page has been removed.
   Use the :doc:`dashboard </dashboards>` index as the default page or redirect
   to the desired page inside the dashboard controller action.
 * The global options ``easy_admin.list.title``, ``easy_admin.show.title``, etc.
   have been removed in favor of the ``setPageTitle()`` method in the ``Crud`` class.
 * The global ``help`` option for entities has been removed in favor of the
-  ``setHelpMessage()`` method in the ``Crud`` class.
+  ``setHelp()`` method in the ``Crud`` class.
 * The global ``easy_admin.list.max_results`` option has been removed in favor of
   the ``setPaginatorPageSize()`` method in the ``Crud`` class.
 * The ``dql_filter`` option to quickly filter the entity listings has been removed.

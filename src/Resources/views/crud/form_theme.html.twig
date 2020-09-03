@@ -99,7 +99,7 @@
             {% endif %}
 
             {% if ea.field.help|default(form.vars.help) != '' %}
-                <small class="form-help">{{ ea.field.help|default(form.vars.help)|trans(domain = form.vars.translation_domain)|raw }}</small>
+                <small class="form-help">{{ ea.field.help|default(form.vars.help)|raw }}</small>
             {% endif %}
 
             {{- form_errors(form) -}}
@@ -114,7 +114,7 @@
 
     {% set row_attr = row_attr|merge({
         'data-ea-collection-field': 'true',
-        'data-entry-is-complex': form.vars.ea_crud_form.ea_field.customOptions.get('entryIsComplex') ? 'true' : 'false',
+        'data-entry-is-complex': form.vars.ea_crud_form.ea_field and form.vars.ea_crud_form.ea_field.customOptions.get('entryIsComplex') ? 'true' : 'false',
         'data-allow-add': allow_add ? 'true' : 'false',
         'data-allow-delete': allow_delete ? 'true' : 'false',
         'data-num-items': form.children|length,
@@ -404,6 +404,7 @@
         'data-language': form.vars.ea_crud_form.ea_field.customOptions.get('language'),
         'data-tab-size': form.vars.ea_crud_form.ea_field.customOptions.get('tabSize'),
         'data-indent-with-tabs': form.vars.ea_crud_form.ea_field.customOptions.get('indentWithTabs') ? 'true' : 'false',
+        'data-show-line-numbers': form.vars.ea_crud_form.ea_field.customOptions.get('showLineNumbers') ? 'true' : 'false',
     }) }) }}
 
     {% set numOfRows = form.vars.ea_crud_form.ea_field.customOptions.get('numOfRows') %}
@@ -419,7 +420,7 @@
 {% block ea_text_editor_widget %}
     {% set numOfRows = form.vars.ea_crud_form.ea_field.customOptions.get('numOfRows') %}
 
-    {{ form_widget(form, { attr: attr|merge({ style: 'display: none' }) }) }}
+    {{ form_widget(form, { attr: attr|merge({ style: 'display: none', class: 'ea-text-editor-content' }) }) }}
 
     <div class="ea-text-editor-wrapper">
         <trix-editor input="{{ id }}" class="trix-content"></trix-editor>
@@ -470,7 +471,7 @@
     {% set applied_filters = ea.request.query.get('filters')|default([])|keys %}
 
     {% for field in form %}
-        <div class="filter-field {% if not loop.last %}border-bottom{% endif %} py-1 px-3 {% if loop.last %}pb-2{% endif %}">
+        <div class="filter-field {% if not loop.last %}border-bottom{% endif %} py-1 px-3 {% if loop.last %}pb-2{% endif %}" data-filter-property="{{ field.vars.name }}">
             <div class="filter-heading" id="filter-heading-{{ loop.index }}">
                 <input type="checkbox" class="filter-checkbox" {% if field.vars.name in applied_filters %}checked{% endif %}>
                 <a data-toggle="collapse" href="#filter-content-{{ loop.index }}" aria-expanded="{{ field.vars.name in applied_filters ? 'true' : 'false' }}" aria-controls="filter-content-{{ loop.index }}">

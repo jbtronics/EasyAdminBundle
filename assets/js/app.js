@@ -17,7 +17,7 @@ window.addEventListener('load', function() {
     createNullableControls();
 
     createAutoCompleteFields();
-    document.addEventListener('ea.collection.item-added', function() { createAutoCompleteFields(); });
+    document.addEventListener('ea.collection.item-added', createAutoCompleteFields);
 
     createContentResizer();
     createNavigationToggler();
@@ -44,11 +44,12 @@ function createNullableControls() {
 }
 
 function createAutoCompleteFields() {
-    var autocompleteFields = $('[data-widget="select2"]');
+    var autocompleteFields = $('[data-widget="select2"]:not(.select2-hidden-accessible)');
 
     autocompleteFields.each(function () {
         var $this = $(this),
-            autocompleteUrl = $this.data('ea-autocomplete-endpoint-url');
+            autocompleteUrl = $this.data('ea-autocomplete-endpoint-url'),
+            allowClear = $this.data('allow-clear');
 
         if (undefined === autocompleteUrl) {
             $this.select2({ theme: 'bootstrap', placeholder: '', allowClear: true });
@@ -76,7 +77,7 @@ function createAutoCompleteFields() {
                     cache: true
                 },
                 placeholder: '',
-                allowClear: false,
+                allowClear: allowClear,
                 minimumInputLength: 1
             });
         }

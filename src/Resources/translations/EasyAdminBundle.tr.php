@@ -2,7 +2,7 @@
 
 return [
     'page_title' => [
-        // 'dashboard' => '',
+        'dashboard' => 'Kontrol Paneli',
         'detail' => '%entity_label_singular% <small>(#%entity_short_id%)</small>',
         'edit' => '%entity_label_singular% <small>(#%entity_short_id%)</small> Düzenle',
         'index' => '%entity_label_plural%',
@@ -11,7 +11,7 @@ return [
     ],
 
     'datagrid' => [
-        // 'hidden_results' => '',
+        'hidden_results' => 'Yeterli izniniz olmadığı için bazı sonuçlar görüntülenemiyor',
         'no_results' => 'Sonuç bulunamadı.',
     ],
 
@@ -29,16 +29,16 @@ return [
         'false' => 'Hayır',
         'empty' => 'Boş',
         'null' => 'Boş',
-        'nullable_field' => 'Boş Bırakabilirsiniz',
+        'nullable_field' => 'Boş bırakabilirsiniz',
         'object' => 'PHP Objesi',
         'inaccessible' => 'Erişilemez',
-        'inaccessible.explanation' => 'Özelliğin getter methodu tanımlanmamış veya özellik public değil',
+        'inaccessible.explanation' => 'Özelliğin getter methodu tanımlanmamış veya özellik açık değil',
         'form.empty_value' => 'Boş',
     ],
 
     'field' => [
-        // 'code_editor.view_code' => '',
-        // 'text_editor.view_content' => '',
+        'code_editor.view_code' => 'Kodu görüntüle',
+        'text_editor.view_content' => 'İçeriği görüntüle',
     ],
 
     'action' => [
@@ -49,17 +49,17 @@ return [
         'edit' => 'Düzenle',
         'delete' => 'Sil',
         'cancel' => 'İptal',
-        'index' => 'Listeye Dön',
-        // 'deselect' => '',
+        'index' => 'Listeye dön',
+        'deselect' => 'Seçimi bırak',
         'add_new_item' => 'Yeni öğe ekle',
-        'remove_item' => 'Öğeyi Sil',
-        'choose_file' => 'Dosya Seç',
-        // 'close' => '',
-        // 'create' => '',
-        // 'create_and_add_another' => '',
-        // 'create_and_continue' => '',
-        // 'save' => '',
-        // 'save_and_continue' => '',
+        'remove_item' => 'Öğeyi sil',
+        'choose_file' => 'Dosya seç',
+        'close' => 'Kapat',
+        'create' => 'Oluştur',
+        'create_and_add_another' => 'Oluşturulup, başka ekle',
+        'create_and_continue' => 'Oluştur ve düzenlemeye devam et',
+        'save' => 'Kaydet',
+        'save_and_continue' => 'Kaydet ve düzenlemeye devam et',
     ],
 
     'batch_action_modal' => [
@@ -83,7 +83,7 @@ return [
         'label.is_greater_than_or_equal_to' => 'Büyüktür veya eşittir',
         'label.is_less_than' => 'Küçüktür',
         'label.is_less_than_or_equal_to' => 'Küçüktür veya eşittir',
-        // 'label.is_between' => '',
+        'label.is_between' => 'arasında',
         'label.contains' => 'Metin şunları içeriyor',
         'label.not_contains' => 'Metin şunları içermiyor',
         'label.starts_with' => 'Metin şununla başlıyor',
@@ -121,6 +121,6 @@ return [
         'entity_not_found' => 'Bu öğe artık mevcut değil.',
         'entity_remove' => 'Diğer öğeler buna bağlı olduğu için bu öğe silinemiyor.',
         'forbidden_action' => 'İstenen eylem bu öğe üzerinde gerçekleştirilemez.',
-        // 'insufficient_entity_permission' => 'You don't have permission to access this item.',
+        'insufficient_entity_permission' => 'Bu öğeye erişim izniniz yok.',
     ],
 ];
