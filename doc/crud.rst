@@ -147,7 +147,8 @@ Date, Time and Number Formatting Options
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
-            // the argument must be either one of these strings: 'short', 'medium', 'long', 'full'
+            // the argument must be either one of these strings: 'short', 'medium', 'long', 'full', 'none'
+            // (the strings are also available as \EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField::FORMAT_* constants)
             // or a valid ICU Datetime Pattern (see http://userguide.icu-project.org/formatparse/datetime)
             ->setDateFormat('...')
             ->setTimeFormat('...')
@@ -500,6 +501,13 @@ associated to. If you have more than one dashboard, you must also set the Dashbo
                 ->setController(ProductCrudController::class)
                 ->setAction(Action::INDEX);
 
+            // some actions may require to pass additional parameters
+            $url = $this->crudUrlGenerator
+                ->build()
+                ->setController(ProductCrudController::class)
+                ->setAction(Action::EDIT)
+                ->setEntityId($product->getId());
+
             // ...
         }
     }
@@ -512,13 +520,20 @@ The same applies to URLs generated in Twig templates:
     {% set url = ea_url()
         .setController('App\\Controller\\Admin\\ProductCrudController')
         .setAction('index') %}
-    {# if you prefer PHP constants, use this: .setAction(constant('EasyCorp\\Bundle\\EasyAdminBundle\\Config\\Action::INDEX')) #}
+    {# if you prefer PHP constants, use this:
+       .setAction(constant('EasyCorp\\Bundle\\EasyAdminBundle\\Config\\Action::INDEX')) #}
 
     {# if your application defines multiple Dashboards #}
     {% set url = ea_url()
         .setDashboard('App\\Controller\\Admin\\DashboardController')
         .setController('App\\Controller\\Admin\\ProductCrudController')
         .setAction('index') %}
+
+    {# some actions may require to pass additional parameters #}
+    {% set url = ea_url()
+        .setController('App\\Controller\\Admin\\ProductCrudController')
+        .setAction('edit')
+        .setEntityId(product.id) %}
 
 .. _`Symfony controllers`: https://symfony.com/doc/current/controller.html
 .. _`How to Create a Custom Form Field Type`: https://symfony.com/doc/current/cookbook/form/create_custom_field_type.html
