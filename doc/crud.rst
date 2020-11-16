@@ -104,6 +104,26 @@ The rest of CRUD options are configured using the ``configureCrud()`` method::
         }
     }
 
+Design Options
+~~~~~~~~~~~~~~
+
+::
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            // set this option if you prefer the page content to span the entire
+            // browser width, instead of the default design which sets a max width
+            ->renderContentMaximized()
+
+            // set this option if you prefer the sidebar (which contains the main menu)
+            // to be displayed as a narrow column instead of the default expanded design
+            ->renderSidebarMinimized()
+        ;
+    }
+
+.. _crud_entity_options:
+
 Entity Options
 ~~~~~~~~~~~~~~
 
@@ -116,6 +136,16 @@ Entity Options
             ->setEntityLabelInSingular('Product')
             ->setEntityLabelInPlural('Products')
 
+            // in addition to a string, the argument of the singular and plural label methods
+            // can be a closure that receives both the current entity instance (which will
+            // be null in 'index' and 'new' pages) and the page name
+            ->setEntityLabelInSingular(
+                fn (?Product $product, string $pageName) => $product ? $product->toString() : 'Product'
+            )
+            ->setEntityLabelInPlural(function (?Category $category, string $pageName) {
+                return 'edit' === $pageName ? $category->getLabel() : 'Categories';
+            })
+
             // the Symfony Security permission needed to manage the entity
             // (none by default, so you can manage all instances of the entity)
             ->setEntityPermission('ROLE_EDITOR')
@@ -125,7 +155,13 @@ Entity Options
 Title and Help Options
 ~~~~~~~~~~~~~~~~~~~~~~
 
-::
+By default, the page titles of the ``index`` and ``new`` pages are based on the
+:ref:`entity option <crud_entity_options>` values defined with the
+``setEntityLabelInSingular()`` and ``setEntityLabelInPlural()`` methods. In the
+``detail`` and ``edit`` pages, EasyAdmin tries first to convert the entity into
+a string representation and falls back to a generic title otherwise.
+
+You can override the default page titles with the following methods::
 
     public function configureCrud(Crud $crud): Crud
     {
@@ -133,6 +169,14 @@ Title and Help Options
             // the visible title at the top of the page and the content of the <title> element
             // it can include these placeholders: %entity_id%, %entity_label_singular%, %entity_label_plural%
             ->setPageTitle('index', '%entity_label_plural% listing')
+
+            // you can pass a PHP closure as the value of the title
+            ->setPageTitle('new', fn () => new \DateTime('now') > new \DateTime('today 13:00') ? 'New dinner' : 'New lunch')
+
+            // in DETAIL and EDIT pages, the closure receives the current entity
+            // as the first argument
+            ->setPageTitle('detail', function(Product $product) => (string) $product)
+            ->setPageTitle('edit', fn (Category $category) => sprintf('Editing <b>%s</b>', $category->getName()))
 
             // the help message displayed to end users (it can contain HTML tags)
             ->setHelp('edit', '...')
@@ -178,7 +222,7 @@ Search and Pagination Options
             // use dots (e.g. 'seller.email') to search in Doctrine associations
             ->setSearchFields(['name', 'description', 'seller.email', 'seller.phone'])
             // set it to null to disable and hide the search box
-            ->setSearchFields(null);
+            ->setSearchFields(null)
 
             // defines the initial sorting applied to the list of entities
             // (user can later change this sorting by clicking on the table columns)
@@ -298,10 +342,10 @@ quite a lot of code, so overriding them is not that convenient.
 Instead, you can override other smaller methods that implement certain features
 needed by the CRUD actions. For example, the ``index()`` action calls to a
 method named ``createIndexQueryBuilder()`` to create the Doctrine query builder
-used to get the results dispalyed on the index listing. If you want to customize
+used to get the results displayed on the index listing. If you want to customize
 that listing, it's better to override the ``createIndexQueryBuilder()`` method
 instead of the entire ``index()`` method. There are many of these methods, so
-you should check the ``EasyCorp\\Bundle\\EasyAdminBundle\\Controller\\AbstractCrudController`` class.
+you should check the ``EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController`` class.
 
 The other alternative to customize CRUD actions is to use the
 :doc:`events triggered by EasyAdmin </events>`, such as ``BeforeCrudActionEvent``
@@ -354,7 +398,7 @@ The default CRUD actions implemented in ``AbstractCrudController`` don't end
 with the usual ``$this->render('...')`` instruction to render a Twig template
 and return its contents in a Symfony ``Response`` object.
 
-Instead, CRUD actions return a ``EasyCorp\\Bundle\\EasyAdminBundle\\Config\\KeyValueStore``
+Instead, CRUD actions return a ``EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore``
 object with the variables passed to the template that renders the CRUD action
 contents. This ``KeyValueStore`` object is similar to Symfony's ``ParameterBag``
 object. It's like an object-oriented array with useful methods such as ``get()``,
@@ -468,11 +512,10 @@ Symfony controller) the :ref:`admin context variable <admin-context>` is not
 available. That's why you must always set the CRUD controller the URL is
 associated to. If you have more than one dashboard, you must also set the Dashboard::
 
-    use EasyCorp\Bundle\EasyAdminBundle\Router\CrudUrlGenerator;
-
     use App\Controller\Admin\DashboardController;
     use App\Controller\Admin\ProductCrudController;
     use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+    use EasyCorp\Bundle\EasyAdminBundle\Router\CrudUrlGenerator;
     use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
     class SomeSymfonyController extends AbstractController
@@ -536,12 +579,4 @@ The same applies to URLs generated in Twig templates:
         .setEntityId(product.id) %}
 
 .. _`Symfony controllers`: https://symfony.com/doc/current/controller.html
-.. _`How to Create a Custom Form Field Type`: https://symfony.com/doc/current/cookbook/form/create_custom_field_type.html
-.. _`Symfony Form types`: https://symfony.com/doc/current/reference/forms/types.html
-.. _`customize individual form fields`: https://symfony.com/doc/current/form/form_customization.html#how-to-customize-an-individual-field
-.. _`form fragment naming rules`: https://symfony.com/doc/current/form/form_themes.html#form-template-blocks
-.. _`override any part of third-party bundles`: https://symfony.com/doc/current/bundles/override.html
-.. _`Trix editor`: https://trix-editor.org/
-.. _`Symfony security voters`: https://symfony.com/doc/current/security/voters.html
-.. _`form data transformer`: https://symfony.com/doc/current/form/data_transformers.html
 .. _`Doctrine filters`: https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/filters.html

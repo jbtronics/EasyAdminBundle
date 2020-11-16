@@ -1,11 +1,19 @@
-window.addEventListener('DOMContentLoaded', function (event) {
-    document.querySelectorAll('[data-ea-collection-field]').forEach(function(collection) {
-        let addButton = collection.querySelector('button.field-collection-add-button');
-        if (null !== addButton) {
-            EaCollectionProperty.handleAddButton(addButton, collection);
+const eaCollectionHandler = function (event) {
+    document.querySelectorAll('button.field-collection-add-button').forEach(function(addButton) {
+
+        let collection = addButton.closest('[data-ea-collection-field]');
+
+        if (!collection || collection.classList.contains('processed')) {
+            return;
         }
+
+        EaCollectionProperty.handleAddButton(addButton, collection);
     });
-});
+}
+
+window.addEventListener('DOMContentLoaded', eaCollectionHandler);
+document.addEventListener('ea.collection.item-added', eaCollectionHandler);
+
 
 const EaCollectionProperty = {
     handleAddButton: function(addButton, collection) {
@@ -19,20 +27,20 @@ const EaCollectionProperty = {
                 emptyCollectionBadge.remove();
             }
 
-            const newItemNumber = numItems + 1;
             const formTypeNamePlaceholder = collection.dataset.formTypeNamePlaceholder;
             const labelRegexp = new RegExp(formTypeNamePlaceholder + 'label__', 'g');
             const nameRegexp = new RegExp(formTypeNamePlaceholder, 'g');
 
             let newItemHtml = collection.dataset.prototype
-                .replace(labelRegexp, newItemNumber)
-                .replace(nameRegexp, newItemNumber);
+                .replace(labelRegexp, numItems)
+                .replace(nameRegexp, numItems);
 
             collection.dataset.numItems = ++numItems;
             collection.querySelector('.form-widget .form-widget-compound > div').insertAdjacentHTML('beforeend', newItemHtml);
 
             document.dispatchEvent(new Event('ea.collection.item-added'));
         });
+
+        collection.classList.add('processed');
     }
 };
-

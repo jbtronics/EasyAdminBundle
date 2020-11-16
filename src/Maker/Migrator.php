@@ -39,20 +39,20 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\NumericFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ArrayFilterType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ComparisonFilterType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\DateTimeFilterType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\EntityFilterType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\NumericFilterType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\TextFilterType;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Security\Core\User\UserInterface;
 use function Symfony\Component\String\u;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ArrayFilterType;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\BooleanFilterType;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\TextFilterType;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\NumericFilterType;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\DateTimeFilterType;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ComparisonFilterType;
-use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\EntityFilterType;
 
 final class Migrator
 {
@@ -905,7 +905,6 @@ final class Migrator
 
     private function dumpCode(CodeBuilder $code, string $outputFilePath): bool
     {
-        //dump($code->getAsString());
         try {
             $rawSourceCode = $this->parser->parse($code->getAsString());
             $formattedSourceCode = $this->codePrettyPrinter->prettyPrintFile($rawSourceCode);
@@ -1467,7 +1466,7 @@ final class Migrator
                 continue;
             }
 
-            if (u($cssClass)->startsWith('fa-') && !\in_array($cssClass, $specialCssClasses)) {
+            if (u($cssClass)->startsWith('fa-') && !\in_array($cssClass, $specialCssClasses, true)) {
                 if (\array_key_exists($cssClass, $iconClassMap)) {
                     $cssClass = $iconClassMap[$cssClass];
                 } else {

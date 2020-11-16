@@ -2,7 +2,7 @@
 {% trans_default_domain ea.i18n.translationDomain %}
 
 <!DOCTYPE html>
-<html lang="{{ ea.i18n.htmlLocale }}">
+<html lang="{{ ea.i18n.htmlLocale }}" dir="{{ ea.i18n.textDirection }}">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -31,7 +31,8 @@
     {% endblock head_javascript %}
 
     {% if 'rtl' == ea.i18n.textDirection %}
-        <link rel="stylesheet" href="{{ asset('bundles/easyadmin/app-rtl.css') }}">
+        <link rel="stylesheet" href="{{ asset('bundles/easyadmin/app.rtl.css') }}">
+        <link rel="stylesheet" href="{{ asset('bundles/easyadmin/app-custom-rtl.css') }}">
     {% endif %}
 
     {% block configured_head_contents %}
@@ -45,8 +46,8 @@
     <body id="{% block body_id %}{% endblock %}" class="ea {% block body_class %}{% endblock %}">
     <script>
         document.body.classList.add(
-            'ea-content-width-' + (localStorage.getItem('ea/content/width') || 'normal'),
-            'ea-sidebar-width-' + (localStorage.getItem('ea/sidebar/width') || 'normal')
+            'ea-content-width-' + (localStorage.getItem('ea/content/width') || '{{ ea.crud.contentWidth ?? ea.dashboardContentWidth ?? 'normal' }}'),
+            'ea-sidebar-width-' + (localStorage.getItem('ea/sidebar/width') || '{{ ea.crud.sidebarWidth ?? ea.dashboardSidebarWidth ?? 'normal' }}')
         );
     </script>
 
@@ -60,17 +61,19 @@
                 <header class="main-header">
                     {% block header %}
                         <nav class="navbar" role="navigation">
-                            <button id="navigation-toggler" type="button" aria-label="Toggle navigation">
-                                <i class="fa fa-fw fa-bars"></i>
-                            </button>
+                            {% block header_navbar %}
+                                <button id="navigation-toggler" type="button" aria-label="Toggle navigation">
+                                    <i class="fa fa-fw fa-bars"></i>
+                                </button>
 
-                            <div id="header-logo">
-                                {% block header_logo %}
-                                    <a class="logo {{ ea.dashboardTitle|length > 14 ? 'logo-long' }}" title="{{ ea.dashboardTitle|striptags }}" href="{{ path(ea.dashboardRouteName) }}">
-                                        {{ ea.dashboardTitle|raw }}
-                                    </a>
-                                {% endblock header_logo %}
-                            </div>
+                                <div id="header-logo">
+                                    {% block header_logo %}
+                                        <a class="logo {{ ea.dashboardTitle|length > 14 ? 'logo-long' }}" title="{{ ea.dashboardTitle|striptags }}" href="{{ path(ea.dashboardRouteName) }}">
+                                            {{ ea.dashboardTitle|raw }}
+                                        </a>
+                                    {% endblock header_logo %}
+                                </div>
+                            {% endblock header_navbar %}
                         </nav>
 
                         {% set _user_menu_content %}

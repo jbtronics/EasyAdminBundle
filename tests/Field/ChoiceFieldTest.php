@@ -2,8 +2,6 @@
 
 namespace EasyCorp\Bundle\EasyAdminBundle\Tests\Field;
 
-use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Configurator\ChoiceConfigurator;
 
@@ -25,6 +23,16 @@ class ChoiceFieldTest extends AbstractFieldTest
 
         $field = ChoiceField::new('foo');
         $this->configure($field);
+    }
+
+    public function testFieldWithChoiceGeneratorCallback()
+    {
+        $field = ChoiceField::new('foo')->setChoices(static function () { return ['foo' => 1, 'bar' => 2]; });
+
+        self::assertSame(['foo' => 1, 'bar' => 2], $this->configure($field)->getFormTypeOption(ChoiceField::OPTION_CHOICES));
+
+        $field->setValue(1);
+        self::assertSame('foo', $this->configure($field)->getFormattedValue());
     }
 
     public function testFieldWithWrongVisualOptions()
@@ -59,7 +67,7 @@ class ChoiceFieldTest extends AbstractFieldTest
         $field->allowMultipleChoices();
 
         self::assertSame(
-            ['choices' => $this->choices, 'multiple' => true, 'expanded' => true],
+            ['choices' => $this->choices, 'multiple' => true, 'expanded' => true, 'placeholder' => ''],
             $this->configure($field)->getFormTypeOptions()
         );
     }

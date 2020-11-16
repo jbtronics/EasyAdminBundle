@@ -2,9 +2,9 @@
 
 namespace EasyCorp\Bundle\EasyAdminBundle\Dto;
 
-use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\Persistence\Mapping\ClassMetadata;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\ActionCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
@@ -21,7 +21,7 @@ final class EntityDto
     private $primaryKeyName;
     private $primaryKeyValue;
     private $permission;
-    /** @var ?FieldDtoCollection */
+    /** @var ?FieldCollection */
     private $fields;
     /** @var ActionCollection */
     private $actions;
@@ -79,14 +79,10 @@ final class EntityDto
             return $this->primaryKeyValue;
         }
 
-        try {
-            $r = ClassUtils::newReflectionObject($this->instance);
-            $primaryKeyProperty = $r->getProperty($this->primaryKeyName);
-            $primaryKeyProperty->setAccessible(true);
-            $primaryKeyValue = $primaryKeyProperty->getValue($this->instance);
-        } catch (\Exception $e) {
-            $primaryKeyValue = null;
-        }
+        $r = ClassUtils::newReflectionObject($this->instance);
+        $primaryKeyProperty = $r->getProperty($this->primaryKeyName);
+        $primaryKeyProperty->setAccessible(true);
+        $primaryKeyValue = $primaryKeyProperty->getValue($this->instance);
 
         return $this->primaryKeyValue = $primaryKeyValue;
     }

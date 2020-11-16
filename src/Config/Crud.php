@@ -15,6 +15,10 @@ class Crud
     public const PAGE_EDIT = 'edit';
     public const PAGE_INDEX = 'index';
     public const PAGE_NEW = 'new';
+    public const LAYOUT_CONTENT_DEFAULT = 'normal';
+    public const LAYOUT_CONTENT_FULL = 'full';
+    public const LAYOUT_SIDEBAR_DEFAULT = 'normal';
+    public const LAYOUT_SIDEBAR_COMPACT = 'compact';
 
     /** @var CrudDto */
     private $dto;
@@ -35,21 +39,30 @@ class Crud
         return new self($dto);
     }
 
-    public function setEntityLabelInSingular(string $label): self
+    /**
+     * @param string|callable $label The callable signature is: fn ($entityInstance, string $pageName): string
+     */
+    public function setEntityLabelInSingular($label): self
     {
         $this->dto->setEntityLabelInSingular($label);
 
         return $this;
     }
 
-    public function setEntityLabelInPlural(string $label): self
+    /**
+     * @param string|callable $label The callable signature is: fn ($entityInstance, string $pageName): string
+     */
+    public function setEntityLabelInPlural($label): self
     {
         $this->dto->setEntityLabelInPlural($label);
 
         return $this;
     }
 
-    public function setPageTitle(string $pageName, string $title): self
+    /**
+     * @param string|callable $title The callable signature is: fn ($entityInstance): string
+     */
+    public function setPageTitle(string $pageName, $title): self
     {
         if (!\in_array($pageName, $this->getValidPageNames(), true)) {
             throw new \InvalidArgumentException(sprintf('The first argument of the "%s()" method must be one of these valid page names: %s ("%s" given).', __METHOD__, implode(', ', $this->getValidPageNames()), $pageName));
@@ -77,11 +90,11 @@ class Crud
     public function setDateFormat(string $formatOrPattern): self
     {
         if (DateTimeField::FORMAT_NONE === $formatOrPattern || '' === trim($formatOrPattern)) {
-            $validDateFormatsWithoutNone = array_filter(DateTimeField::VALID_DATE_FORMATS, static function($format) {
+            $validDateFormatsWithoutNone = array_filter(DateTimeField::VALID_DATE_FORMATS, static function ($format) {
                 return DateTimeField::FORMAT_NONE !== $format;
             });
 
-            throw new \InvalidArgumentException(sprintf('The first argument of the "%s()" method cannot be "%s" or an empty string. Use either the special date formats (%s) or a datetime Intl pattern.',  __METHOD__, DateTimeField::FORMAT_NONE, implode(', ', $validDateFormatsWithoutNone)));
+            throw new \InvalidArgumentException(sprintf('The first argument of the "%s()" method cannot be "%s" or an empty string. Use either the special date formats (%s) or a datetime Intl pattern.', __METHOD__, DateTimeField::FORMAT_NONE, implode(', ', $validDateFormatsWithoutNone)));
         }
 
         $datePattern = DateTimeField::INTL_DATE_PATTERNS[$formatOrPattern] ?? $formatOrPattern;
@@ -96,11 +109,11 @@ class Crud
     public function setTimeFormat(string $formatOrPattern): self
     {
         if (DateTimeField::FORMAT_NONE === $formatOrPattern || '' === trim($formatOrPattern)) {
-            $validTimeFormatsWithoutNone = array_filter(DateTimeField::VALID_DATE_FORMATS, static function($format) {
+            $validTimeFormatsWithoutNone = array_filter(DateTimeField::VALID_DATE_FORMATS, static function ($format) {
                 return DateTimeField::FORMAT_NONE !== $format;
             });
 
-            throw new \InvalidArgumentException(sprintf('The first argument of the "%s()" method cannot be "%s" or an empty string. Use either the special time formats (%s) or a datetime Intl pattern.',  __METHOD__, DateTimeField::FORMAT_NONE, implode(', ', $validTimeFormatsWithoutNone)));
+            throw new \InvalidArgumentException(sprintf('The first argument of the "%s()" method cannot be "%s" or an empty string. Use either the special time formats (%s) or a datetime Intl pattern.', __METHOD__, DateTimeField::FORMAT_NONE, implode(', ', $validTimeFormatsWithoutNone)));
         }
 
         $timePattern = DateTimeField::INTL_TIME_PATTERNS[$formatOrPattern] ?? $formatOrPattern;
@@ -292,6 +305,20 @@ class Crud
     public function setEntityPermission(string $permission): self
     {
         $this->dto->setEntityPermission($permission);
+
+        return $this;
+    }
+
+    public function renderContentMaximized(bool $maximized = true): self
+    {
+        $this->dto->setContentWidth($maximized ? self::LAYOUT_CONTENT_FULL : self::LAYOUT_CONTENT_DEFAULT);
+
+        return $this;
+    }
+
+    public function renderSidebarMinimized(bool $minimized = true): self
+    {
+        $this->dto->setSidebarWidth($minimized ? self::LAYOUT_SIDEBAR_COMPACT : self::LAYOUT_SIDEBAR_DEFAULT);
 
         return $this;
     }
