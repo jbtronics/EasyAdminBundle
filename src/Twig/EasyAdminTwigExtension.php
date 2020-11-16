@@ -4,10 +4,7 @@ namespace EasyCorp\Bundle\EasyAdminBundle\Twig;
 
 use EasyCorp\Bundle\EasyAdminBundle\Router\CrudUrlBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Router\CrudUrlGenerator;
-use Symfony\Component\HttpKernel\Kernel;
-use Symfony\Component\Intl\Countries;
-use Symfony\Component\Intl\Exception\MissingResourceException;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Environment;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
@@ -20,13 +17,10 @@ use Twig\TwigFunction;
 class EasyAdminTwigExtension extends AbstractExtension
 {
     private $crudUrlGenerator;
-    /** @var TranslatorInterface|null */
-    private $translator;
 
-    public function __construct(CrudUrlGenerator $crudUrlGenerator, ?TranslatorInterface $translator)
+    public function __construct(CrudUrlGenerator $crudUrlGenerator)
     {
         $this->crudUrlGenerator = $crudUrlGenerator;
-        $this->translator = $translator;
     }
 
     /**
@@ -44,16 +38,11 @@ class EasyAdminTwigExtension extends AbstractExtension
      */
     public function getFilters()
     {
-        $filters = [
+        return [
             new TwigFilter('ea_flatten_array', [$this, 'flattenArray']),
             new TwigFilter('ea_filesize', [$this, 'fileSize']),
+            new TwigFilter('ea_apply_filter_if_exists', [$this, 'applyFilterIfExists'], ['needs_environment' => true]),
         ];
-
-        if (Kernel::VERSION_ID >= 40200) {
-            $filters[] = new TwigFilter('transchoice', [$this, 'transchoice']);
-        }
-
-        return $filters;
     }
 
     /**
@@ -85,21 +74,18 @@ class EasyAdminTwigExtension extends AbstractExtension
         return (int) ($bytes / (1024 ** $factor)).@$size[$factor];
     }
 
+    // Code adapted from https://stackoverflow.com/a/48606773/2804294 (License: CC BY-SA 3.0)
+    public function applyFilterIfExists(Environment $environment, $value, string $filterName, ...$filterArguments)
+    {
+        if (false === $filter = $environment->getFilter($filterName)) {
+            return $value;
+        }
+
+        return $filter->getCallable()($value, ...$filterArguments);
+    }
+
     public function getCrudUrlBuilder(array $queryParameters = []): CrudUrlBuilder
     {
         return $this->crudUrlGenerator->build($queryParameters);
-    }
-
-    /**
-     * TODO: Remove this filter when the Symfony's requirement is equal or greater than 4.2
-     * and use the built-in trans filter instead with a %count% parameter.
-     */
-    public function transchoice($message, $count, array $arguments = [], $domain = null, $locale = null)
-    {
-        if (null === $this->translator) {
-            return strtr($message, $arguments);
-        }
-
-        return $this->translator->trans($message, array_merge(['%count%' => $count], $arguments), $domain, $locale);
     }
 }

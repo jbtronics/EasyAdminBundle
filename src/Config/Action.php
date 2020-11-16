@@ -139,7 +139,10 @@ final class Action
     }
 
     /**
-     * @param array|callable $routeParameters
+     * @param array|callable $routeParameters The callable has the signature: function ($entity): array
+     *
+     * Route parameters can be defined as a callable with the signature: function ($entityInstance): array
+     * Example: ->linkToRoute('invoice_send', fn (Invoice $entity) => ['uuid' => $entity->getId()]);
      */
     public function linkToRoute(string $routeName, $routeParameters = []): self
     {

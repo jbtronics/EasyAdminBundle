@@ -59,7 +59,7 @@ final class AdminContextFactory
         $crudDto = $this->getCrudDto($this->crudControllers, $dashboardController, $crudController, $actionConfigDto, $filters, $crudAction, $pageName);
         $entityDto = $this->getEntityDto($request, $crudDto);
         $searchDto = $this->getSearchDto($request, $crudDto);
-        $i18nDto = $this->getI18nDto($request, $dashboardDto, $crudDto);
+        $i18nDto = $this->getI18nDto($request, $dashboardDto, $crudDto, $entityDto);
         $templateRegistry = $this->getTemplateRegistry($dashboardController, $crudDto);
         $user = $this->getUser($this->tokenStorage);
 
@@ -75,13 +75,9 @@ final class AdminContextFactory
         foreach ($dashboardControllerRoutes as $routeName => $controller) {
             if ($controller === $dashboardController) {
                 // needed for i18n routes, whose name follows the pattern "route_name.locale"
-                $routeLocale = explode('.', $dashboardRouteName)[1] ?? null;
+                $dashboardRouteName = explode('.', $routeName, 2)[0];
 
-                if (null === $routeLocale || $routeLocale === $request->getLocale()) {
-                    $dashboardRouteName = $routeName;
-
-                    break;
-                }
+                break;
             }
         }
 
@@ -116,7 +112,6 @@ final class AdminContextFactory
         $crudDto = $crudController->configureCrud($defaultCrud)->getAsDto();
 
         $entityFqcn = $crudControllers->findEntityFqcnByCrudFqcn(\get_class($crudController));
-        $entityClassName = basename(str_replace('\\', '/', $entityFqcn));
 
         $crudDto->setControllerFqcn(\get_class($crudController));
         $crudDto->setActionsConfig($actionConfigDto);
@@ -164,7 +159,7 @@ final class AdminContextFactory
         return $templateRegistry;
     }
 
-    private function getI18nDto(Request $request, DashboardDto $dashboardDto, ?CrudDto $crudDto): I18nDto
+    private function getI18nDto(Request $request, DashboardDto $dashboardDto, ?CrudDto $crudDto, ?EntityDto $entityDto): I18nDto
     {
         $locale = $request->getLocale();
 
@@ -181,8 +176,9 @@ final class AdminContextFactory
             $translationParameters['%entity_id%'] = $entityId = $request->query->get('entityId');
             $translationParameters['%entity_short_id%'] = null === $entityId ? null : u((string) $entityId)->truncate(7);
 
-            $translatedSingularLabel = $this->translator->trans($crudDto->getEntityLabelInSingular() ?? $entityName, $translationParameters, $translationDomain);
-            $translatedPluralLabel = $this->translator->trans($crudDto->getEntityLabelInPlural() ?? $entityName, $translationParameters, $translationDomain);
+            $entityInstance = null === $entityDto ? null : $entityDto->getInstance();
+            $translatedSingularLabel = $this->translator->trans($crudDto->getEntityLabelInSingular($entityInstance) ?? $entityName, $translationParameters, $translationDomain);
+            $translatedPluralLabel = $this->translator->trans($crudDto->getEntityLabelInPlural($entityInstance) ?? $entityName, $translationParameters, $translationDomain);
             $crudDto->setEntityLabelInSingular($translatedSingularLabel);
             $crudDto->setEntityLabelInPlural($translatedPluralLabel);
 

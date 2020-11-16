@@ -16,6 +16,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Controller\CrudControllerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Event\AfterCrudActionEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityDeletedEvent;
@@ -29,10 +30,12 @@ use EasyCorp\Bundle\EasyAdminBundle\Exception\EntityRemoveException;
 use EasyCorp\Bundle\EasyAdminBundle\Exception\ForbiddenActionException;
 use EasyCorp\Bundle\EasyAdminBundle\Exception\InsufficientEntityPermissionException;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\ActionFactory;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\ControllerFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\EntityFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\FilterFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\FormFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Factory\PaginatorFactory;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Type\FiltersFormType;
 use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityUpdater;
@@ -88,6 +91,7 @@ abstract class AbstractCrudController extends AbstractController implements Crud
             'event_dispatcher' => '?'.EventDispatcherInterface::class,
             ActionFactory::class => '?'.ActionFactory::class,
             AdminContextProvider::class => '?'.AdminContextProvider::class,
+            ControllerFactory::class => '?'.ControllerFactory::class,
             CrudUrlGenerator::class => '?'.CrudUrlGenerator::class,
             EntityFactory::class => '?'.EntityFactory::class,
             EntityRepository::class => '?'.EntityRepository::class,
@@ -254,8 +258,9 @@ abstract class AbstractCrudController extends AbstractController implements Crud
             }
 
             if (Action::SAVE_AND_RETURN === $submitButtonName) {
-                $url = $context->getReferrer()
-                    ?? $this->get(CrudUrlGenerator::class)->build()->setAction(Action::INDEX)->generateUrl();
+                $url = empty($context->getReferrer())
+                    ? $this->get(CrudUrlGenerator::class)->build()->setAction(Action::INDEX)->generateUrl()
+                    : $context->getReferrer();
 
                 return $this->redirect($url);
             }
@@ -298,10 +303,13 @@ abstract class AbstractCrudController extends AbstractController implements Crud
         $context->getEntity()->setInstance($this->createEntity($context->getEntity()->getFqcn()));
         $this->get(EntityFactory::class)->processFields($context->getEntity(), FieldCollection::new($this->configureFields(Crud::PAGE_NEW)));
         $this->get(EntityFactory::class)->processActions($context->getEntity(), $context->getCrud()->getActionsConfig());
-        $entityInstance = $context->getEntity()->getInstance();
 
         $newForm = $this->createNewForm($context->getEntity(), $context->getCrud()->getNewFormOptions(), $context);
         $newForm->handleRequest($context->getRequest());
+
+        $entityInstance = $newForm->getData();
+        $context->getEntity()->setInstance($entityInstance);
+
         if ($newForm->isSubmitted() && $newForm->isValid()) {
             // TODO:
             // $this->processUploadedFiles($newForm);
@@ -412,6 +420,20 @@ abstract class AbstractCrudController extends AbstractController implements Crud
     public function autocomplete(AdminContext $context): JsonResponse
     {
         $queryBuilder = $this->createIndexQueryBuilder($context->getSearch(), $context->getEntity(), FieldCollection::new([]), FilterCollection::new());
+
+        $autocompleteContext = $context->getRequest()->get(AssociationField::PARAM_AUTOCOMPLETE_CONTEXT);
+
+        /** @var CrudControllerInterface $controller */
+        $controller = $this->get(ControllerFactory::class)->getCrudControllerInstance($autocompleteContext['crudId'], Action::INDEX, $context->getRequest());
+        /** @var FieldDto $field */
+        $field = FieldCollection::new($controller->configureFields(Crud::PAGE_INDEX))->get($autocompleteContext['propertyName']);
+        /** @var \Closure|null $queryBuilderCallable */
+        $queryBuilderCallable = $field->getCustomOption(AssociationField::OPTION_QUERY_BUILDER_CALLABLE);
+
+        if (null !== $queryBuilderCallable) {
+            $queryBuilderCallable($queryBuilder);
+        }
+
         $paginator = $this->get(PaginatorFactory::class)->create($queryBuilder);
 
         return JsonResponse::fromJsonString($paginator->getResultsAsJson());

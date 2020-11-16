@@ -175,6 +175,9 @@ class CrudUrlBuilder
             $this->dashboardRoute = $this->dashboardControllers->getFirstDashboardRoute();
         }
 
+        // needed for i18n routes, whose name follows the pattern "route_name.locale"
+        $this->dashboardRoute = explode('.', $this->dashboardRoute, 2)[0];
+
         // this removes any parameter with a NULL value
         $routeParameters = array_filter($this->routeParameters, static function ($parameterValue) {
             return null !== $parameterValue;

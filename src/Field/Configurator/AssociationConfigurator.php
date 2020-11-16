@@ -2,6 +2,7 @@
 
 namespace EasyCorp\Bundle\EasyAdminBundle\Field\Configurator;
 
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\PersistentCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
@@ -71,14 +72,25 @@ final class AssociationConfigurator implements FieldConfiguratorInterface
                 ->setController($field->getCustomOption(AssociationField::OPTION_CRUD_CONTROLLER))
                 ->setAction('autocomplete')
                 ->setEntityId(null)
+                ->unset('sort') // Avoid passing the 'sort' param from the current entity to the autocompleted one
+                ->set(AssociationField::PARAM_AUTOCOMPLETE_CONTEXT, [
+                    'crudId' => $context->getRequest()->query->get('crudId'),
+                    'propertyName' => $propertyName,
+                ])
                 ->generateUrl();
 
             $field->setFormTypeOption('attr.data-ea-autocomplete-endpoint-url', $autocompleteEndpointUrl);
-            
-            // If the field is not required we allow clearing out the selection
-            if (false === $field->getFormTypeOption('required')) {
-                $field->setFormTypeOption('attr.data-allow-clear', 'true');
-            }
+        } else {
+            $field->setFormTypeOptionIfNotSet('query_builder', static function (EntityRepository $repository) use ($field) {
+                // TODO: should this use `createIndexQueryBuilder` instead, so we get the default ordering etc.?
+                // it would then be identical to the one used in autocomplete action, but it is a bit complex getting it in here
+                $queryBuilder = $repository->createQueryBuilder('entity');
+                if ($queryBuilderCallable = $field->getCustomOption(AssociationField::OPTION_QUERY_BUILDER_CALLABLE)) {
+                    $queryBuilderCallable($queryBuilder);
+                }
+
+                return $queryBuilder;
+            });
         }
     }
 

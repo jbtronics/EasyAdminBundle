@@ -145,6 +145,14 @@ explained later)::
                 // there's no need to define the "text direction" explicitly because
                 // its default value is inferred dynamically from the user locale
                 ->setTextDirection('ltr')
+
+                // set this option if you prefer the page content to span the entire
+                // browser width, instead of the default design which sets a max width
+                ->renderContentMaximized()
+
+                // set this option if you prefer the sidebar (which contains the main menu)
+                // to be displayed as a narrow column instead of the default expanded design
+                ->renderSidebarMinimized()
             ;
         }
     }
@@ -163,12 +171,12 @@ The main menu is a collection of objects implementing
 ``EasyCorp\Bundle\EasyAdminBundle\Contracts\Menu\MenuInterface`` that configure
 the look and behavior of each menu item::
 
-    use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
-    use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
-    use App\Entity\Category;
     use App\Entity\BlogPost;
+    use App\Entity\Category;
     use App\Entity\Comment;
     use App\Entity\User;
+    use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
+    use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 
     class DashboardController extends AbstractDashboardController
     {
@@ -503,7 +511,7 @@ called ``ea`` (the initials of "EasyAdmin"):
 
     {% for menuItem in ea.mainMenu.items %}
         {# ... #}
-    {% endif %}
+    {% endfor %}
 
 The ``AdminContext`` variable is created dynamically on each request, so you
 can't inject it directly in your services. Instead, use the ``AdminContextProvider``
@@ -547,7 +555,7 @@ Translation
 
 The backend interface is fully translated using the `Symfony translation`_
 features. EasyAdmin own messages and contents use the ``EasyAdminBundle``
-translation domain (thanks to our community for kindly providing translations
+`translation domain`_ (thanks to our community for kindly providing translations
 for tens of languages).
 
 The rest of the contents (e.g. the label of the menu items, entity and field
@@ -697,5 +705,4 @@ text contents, custom forms, etc.
 .. _`logout feature`: https://symfony.com/doc/current/security.html#logging-out
 .. _`Symfony translation`: https://symfony.com/doc/current/components/translation.html
 .. _`translation domain`: https://symfony.com/doc/current/components/translation.html#using-message-domains
-.. _`translation domains`: https://symfony.com/doc/current/components/translation.html#using-message-domains
 .. _`work with the user locale`: https://symfony.com/doc/current/translation/locale.html

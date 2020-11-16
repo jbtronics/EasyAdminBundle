@@ -2,8 +2,8 @@
 
 namespace EasyCorp\Bundle\EasyAdminBundle\Orm;
 
-use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Orm\EntityRepositoryInterface;
@@ -82,9 +82,9 @@ final class EntityRepository implements EntityRepositoryInterface
                 $associatedProperties = explode('.', $propertyName);
                 $numAssociatedProperties = \count($associatedProperties);
 
-                if ($numAssociatedProperties > 2) {
-                    throw new \RuntimeException(sprintf('Nested associations of more than two levels (e.g. "%s") are not supported yet. We\'ll add support for them in the future, but meanwhile you can only use two-level associations (e.g. "%s")', $propertyName, implode('.', \array_slice($associatedProperties, 0, 2))));
-                }
+                $originalPropertyName = $associatedProperties[0];
+                $originalPropertyMetadata = $entityDto->getPropertyMetadata($originalPropertyName);
+                $associatedEntityDto = $this->entityFactory->create($originalPropertyMetadata->get('targetEntity'));
 
                 for ($i = 0; $i < $numAssociatedProperties - 1; ++$i) {
                     $associatedEntityName = $associatedProperties[$i];
@@ -95,11 +95,13 @@ final class EntityRepository implements EntityRepositoryInterface
                         $queryBuilder->leftJoin($parentEntityName.'.'.$associatedEntityName, $associatedEntityName);
                         $entitiesAlreadyJoined[] = $associatedEntityName;
                     }
-                }
 
-                $originalPropertyName = $associatedProperties[0];
-                $originalPropertyMetadata = $entityDto->getPropertyMetadata($originalPropertyName);
-                $associatedEntityDto = $this->entityFactory->create($originalPropertyMetadata->get('targetEntity'));
+                    if ($i < $numAssociatedProperties - 2) {
+                        $propertyMetadata = $associatedEntityDto->getPropertyMetadata($associatedPropertyName);
+                        $targetEntity = $propertyMetadata->get('targetEntity');
+                        $associatedEntityDto = $this->entityFactory->create($targetEntity);
+                    }
+                }
 
                 $entityName = $associatedEntityName;
                 $propertyName = $associatedPropertyName;
@@ -144,7 +146,12 @@ final class EntityRepository implements EntityRepositoryInterface
             if ($sortFieldIsDoctrineAssociation) {
                 $sortFieldParts = explode('.', $sortProperty, 2);
                 $queryBuilder->leftJoin('entity.'.$sortFieldParts[0], $sortFieldParts[0]);
-                $queryBuilder->addOrderBy($sortProperty, $sortOrder);
+
+                if (1 === \count($sortFieldParts)) {
+                    $queryBuilder->addOrderBy('entity.'.$sortProperty, $sortOrder);
+                } else {
+                    $queryBuilder->addOrderBy($sortProperty, $sortOrder);
+                }
             } else {
                 $queryBuilder->addOrderBy('entity.'.$sortProperty, $sortOrder);
             }

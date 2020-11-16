@@ -77,18 +77,22 @@ final class DateTimeConfigurator implements FieldConfiguratorInterface
         if (DateTimeField::WIDGET_NATIVE === $widgetOption) {
             $field->setFormTypeOption('widget', 'single_text');
             $field->setFormTypeOption('html5', true);
-        } elseif(DateTimeField::WIDGET_CHOICE === $widgetOption) {
+        } elseif (DateTimeField::WIDGET_CHOICE === $widgetOption) {
             $field->setFormTypeOption('widget', 'choice');
             $field->setFormTypeOption('html5', true);
-        } elseif(DateTimeField::WIDGET_TEXT === $widgetOption) {
+        } elseif (DateTimeField::WIDGET_TEXT === $widgetOption) {
             $field->setFormTypeOption('widget', 'single_text');
             $field->setFormTypeOption('html5', false);
         }
 
         $field->setFormattedValue($formattedValue);
 
+        // check if the property is immutable, but only if it's a real Doctrine entity property
+        if (!$entityDto->hasProperty($field->getProperty())) {
+            return;
+        }
         $doctrineDataType = $entityDto->getPropertyMetadata($field->getProperty())->get('type');
-        $isImmutableDateTime = \in_array($doctrineDataType, [Types::DATETIME_IMMUTABLE, Types::DATE_IMMUTABLE, Types::TIME_IMMUTABLE], true);
+        $isImmutableDateTime = \in_array($doctrineDataType, [Types::DATETIMETZ_IMMUTABLE, Types::DATETIME_IMMUTABLE, Types::DATE_IMMUTABLE, Types::TIME_IMMUTABLE], true);
         if ($isImmutableDateTime) {
             $field->setFormTypeOptionIfNotSet('input', 'datetime_immutable');
         }

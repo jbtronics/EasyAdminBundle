@@ -2,6 +2,8 @@
 
 namespace EasyCorp\Bundle\EasyAdminBundle\Dto;
 
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+
 /**
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  */
@@ -12,12 +14,16 @@ final class DashboardDto
     private $title;
     private $translationDomain;
     private $textDirection;
+    private $contentWidth;
+    private $sidebarWidth;
 
     public function __construct()
     {
         $this->faviconPath = 'favicon.ico';
         $this->title = 'EasyAdmin';
         $this->translationDomain = 'messages';
+        $this->contentWidth = Crud::LAYOUT_CONTENT_DEFAULT;
+        $this->sidebarWidth = Crud::LAYOUT_SIDEBAR_DEFAULT;
     }
 
     public function getRouteName(): string
@@ -68,5 +74,25 @@ final class DashboardDto
     public function setTextDirection($textDirection): void
     {
         $this->textDirection = $textDirection;
+    }
+
+    public function getContentWidth(): string
+    {
+        return $this->contentWidth;
+    }
+
+    public function setContentWidth(string $contentWidth): void
+    {
+        $this->contentWidth = $contentWidth;
+    }
+
+    public function getSidebarWidth(): string
+    {
+        return $this->sidebarWidth;
+    }
+
+    public function setSidebarWidth(string $sidebarWidth): void
+    {
+        $this->sidebarWidth = $sidebarWidth;
     }
 }
