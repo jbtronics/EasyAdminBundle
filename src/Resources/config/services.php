@@ -60,6 +60,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Form\Extension\CollectionTypeExtension;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Extension\EaCrudFormTypeExtension;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Type\CrudBatchActionFormType;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Type\CrudFormType;
+use EasyCorp\Bundle\EasyAdminBundle\Form\Type\FileUploadType;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Type\FiltersFormType;
 use EasyCorp\Bundle\EasyAdminBundle\Inspector\DataCollector;
 use EasyCorp\Bundle\EasyAdminBundle\Intl\IntlFormatter;
@@ -235,6 +236,10 @@ return static function (ContainerConfigurator $container) {
         ->set(FiltersFormType::class)
             ->tag('form.type', ['alias' => 'ea_filters'])
 
+        ->set(FileUploadType::class)
+            ->arg(0, '%kernel.project_dir%')
+            ->tag('form.type')
+
         ->set(ChoiceFilterConfigurator::class)
 
         ->set(CommonFilterConfigurator::class)
@@ -288,6 +293,7 @@ return static function (ContainerConfigurator $container) {
 
         ->set(CommonPostConfigurator::class)
             ->arg(0, new Reference(AdminContextProvider::class))
+            ->arg(1, '%kernel.charset%')
             ->tag(EasyAdminExtension::TAG_FIELD_CONFIGURATOR, ['priority' => -9999])
 
         ->set(CommonPreConfigurator::class)
@@ -296,6 +302,7 @@ return static function (ContainerConfigurator $container) {
             ->tag(EasyAdminExtension::TAG_FIELD_CONFIGURATOR, ['priority' => 9999])
 
         ->set(CountryConfigurator::class)
+            ->arg(0, new Reference('assets.packages'))
 
         ->set(CurrencyConfigurator::class)
 
@@ -309,6 +316,7 @@ return static function (ContainerConfigurator $container) {
         ->set(IdConfigurator::class)
 
         ->set(ImageConfigurator::class)
+            ->arg(0, '%kernel.project_dir%')
 
         ->set(LanguageConfigurator::class)
 

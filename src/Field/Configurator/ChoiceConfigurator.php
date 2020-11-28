@@ -55,6 +55,9 @@ final class ChoiceConfigurator implements FieldConfiguratorInterface
 
         $field->setFormTypeOptionIfNotSet('placeholder', '');
 
+        // the value of this form option must be a string to properly propagate it as an HTML attribute value
+        $field->setFormTypeOption('attr.data-ea-escape-markup', $field->getCustomOption(ChoiceField::OPTION_ESCAPE_HTML_CONTENTS) ? 'true' : 'false');
+
         $fieldValue = $field->getValue();
         $isIndexOrDetail = \in_array($context->getCrud()->getCurrentPage(), [Crud::PAGE_INDEX, Crud::PAGE_DETAIL], true);
         if (null === $fieldValue || !$isIndexOrDetail) {

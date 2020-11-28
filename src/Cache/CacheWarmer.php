@@ -35,8 +35,19 @@ final class CacheWarmer implements CacheWarmerInterface
 
         /** @var Route $route */
         foreach ($allRoutes as $routeName => $route) {
-            $controller = u($route->getDefault('_controller') ?? '');
-            if (!$controller->endsWith('::index')) {
+            $controller = $route->getDefault('_controller') ?? '';
+            // controller is defined as $router->add('admin', '/')->controller(DashboardController::class)
+            if (\is_string($controller) && !empty($controller) && class_exists($controller)) {
+                $controller .= '::__invoke';
+            }
+
+            // controller is defined as $router->add('admin', '/')->controller([DashboardController::class, 'index'])
+            if (\is_array($controller)) {
+                $controller = $controller[0].'::'.($controller[1] ?? '__invoke');
+            }
+
+            $controller = u($controller);
+            if (!$controller->endsWith('::index') && !$controller->endsWith('::__invoke')) {
                 continue;
             }
 
