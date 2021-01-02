@@ -65,7 +65,7 @@ final class FormFactory
     public function createBatchActionsForm(): FormInterface
     {
         return $this->symfonyFormFactory->createNamedBuilder('batch_form', CrudBatchActionFormType::class, null, [
-            'action' => $this->adminUrlGenerator->build()->setAction('batch')->includeReferrer()->generateUrl(),
+            'action' => $this->adminUrlGenerator->setAction('batch')->includeReferrer()->generateUrl(),
         ])->getForm();
     }
 
