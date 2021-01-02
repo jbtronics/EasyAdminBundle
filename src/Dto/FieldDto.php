@@ -133,7 +133,7 @@ final class FieldDto
         return $this->formatValueCallable;
     }
 
-    public function setFormatValueCallable(callable $callable): void
+    public function setFormatValueCallable(?callable $callable): void
     {
         $this->formatValueCallable = $callable;
     }
@@ -246,7 +246,7 @@ final class FieldDto
 
     public function setCssClass(string $cssClass): void
     {
-        $this->cssClass = $cssClass;
+        $this->cssClass = trim($cssClass);
     }
 
     public function getTranslationParameters(): array
