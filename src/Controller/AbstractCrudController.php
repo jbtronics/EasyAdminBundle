@@ -433,7 +433,7 @@ abstract class AbstractCrudController extends AbstractController implements Crud
         /** @var CrudControllerInterface $controller */
         $controller = $this->get(ControllerFactory::class)->getCrudControllerInstance($autocompleteContext[EA::CRUD_CONTROLLER_FQCN], Action::INDEX, $context->getRequest());
         /** @var FieldDto $field */
-        $field = FieldCollection::new($controller->configureFields($autocompleteContext['originatingPage']))->get($autocompleteContext['propertyName']);
+        $field = FieldCollection::new($controller->configureFields($autocompleteContext['originatingPage']))->getByProperty($autocompleteContext['propertyName']);
         /** @var \Closure|null $queryBuilderCallable */
         $queryBuilderCallable = $field->getCustomOption(AssociationField::OPTION_QUERY_BUILDER_CALLABLE);
 
@@ -593,7 +593,7 @@ abstract class AbstractCrudController extends AbstractController implements Crud
             $uploadNew = $config->getOption('upload_new');
 
             foreach ($state->getUploadedFiles() as $index => $file) {
-                $fileName = u($filePaths[$index])->after($uploadDir)->toString();
+                $fileName = u($filePaths[$index])->replace($uploadDir, '')->toString();
                 $uploadNew($file, $uploadDir, $fileName);
             }
         }

@@ -224,6 +224,10 @@
 {% block body_javascript %}
     {{ parent() }}
 
+    {% if filters|length > 0 %}
+        {{ include('@EasyAdmin/crud/includes/_filters_modal.html.twig') }}
+    {% endif %}
+
     <script type="text/javascript">
         $(function() {
             const customSwitches = document.querySelectorAll('td.field-boolean .custom-control.custom-switch input[type="checkbox"]');
