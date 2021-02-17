@@ -71,7 +71,7 @@ final class FieldFactory
 
         $context = $this->adminContextProvider->getContext();
         $currentPage = $context->getCrud()->getCurrentPage();
-        foreach ($fields as $fieldName => $fieldDto) {
+        foreach ($fields as $fieldDto) {
             if ((null !== $currentPage && false === $fieldDto->isDisplayedOn($currentPage))
                 || false === $this->authorizationChecker->isGranted(Permission::EA_VIEW_FIELD, $fieldDto)) {
                 $fields->unset($fieldDto);
@@ -140,6 +140,7 @@ final class FieldFactory
     {
         /** @var FieldDto $newField */
         $newField = $newFieldFqcn::new($fieldDto->getProperty())->getAsDto();
+        $newField->setUniqueId($fieldDto->getUniqueId());
 
         $newField->setFieldFqcn($newFieldFqcn);
         $newField->setDisplayedOn($fieldDto->getDisplayedOn());

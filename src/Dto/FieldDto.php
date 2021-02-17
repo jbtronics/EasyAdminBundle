@@ -57,6 +57,7 @@ final class FieldDto
 
     public function __clone()
     {
+        $this->uniqueId = new Ulid();
         $this->assets = clone $this->assets;
         $this->formTypeOptions = clone $this->formTypeOptions;
         $this->customOptions = clone $this->customOptions;
@@ -67,6 +68,11 @@ final class FieldDto
     public function getUniqueId(): string
     {
         return $this->uniqueId;
+    }
+
+    public function setUniqueId(string $uniqueId): void
+    {
+        $this->uniqueId = $uniqueId;
     }
 
     public function isFormDecorationField(): bool
